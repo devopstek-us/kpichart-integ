@@ -1,0 +1,30 @@
+.site-header { 
+  border-bottom: 1px solid #ccc;
+  padding: .5em 1em;
+}
+
+.site-header::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.site-identity {
+  float: left;
+}
+
+.site-identity h1 {
+  font-size: 1.5em;
+  margin: .7em 0 .3em 0;
+  display: inline-block;
+}
+.site-identity h1 a {
+  color: #ffffff;
+  text-decoration: none;
+}
+.site-identity img {
+  max-width: 200px;
+  max-height: 65px;
+  float: left;
+  margin: 0 10px 0 0;
+}

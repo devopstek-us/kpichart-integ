@@ -1,10 +1,17 @@
 <main>
-    <div class="row">        
-        <input type="file" class="form-control" (change)="addfile($event)" placeholder="Upload file" accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">        
+<app-header></app-header>
+<app-layout>
+
+    <div class="row">    
+        <div class="card">   
+            <h3>Upload your file here to generate charts</h3>
+            <input type="file" class="form-control" (change)="addfile($event)" placeholder="Upload file" accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">  
+        </div>      
     </div>
     <div *ngIf="chartData && file">
         <app-line-chart class="card"></app-line-chart>
         <app-histogram-chart class="card"></app-histogram-chart>
         <app-pie-chart class="card"></app-pie-chart>
     </div>
+</app-layout>
 </main>

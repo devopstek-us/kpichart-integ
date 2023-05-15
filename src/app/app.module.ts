@@ -9,9 +9,10 @@ import { LineTestComponent } from './tests/line-test/line-test.component';
 import { PieChartComponent } from "./pie-chart/pie-chart.component";
 import { HistogramChartComponent } from "./histogram-chart/histogram-chart.component";
 import { DataService } from "./services/data.service";
+import { HeaderComponent } from "./common/header/header.component";
 
 @NgModule({
-  declarations: [AppComponent, LineChartComponent, LineTestComponent, PieChartComponent, HistogramChartComponent],
+  declarations: [AppComponent, HeaderComponent, LineChartComponent, LineTestComponent, PieChartComponent, HistogramChartComponent],
   imports: [
     BrowserModule,
     FormsModule,
