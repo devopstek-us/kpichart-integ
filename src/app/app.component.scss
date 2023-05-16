@@ -1,0 +1,33 @@
+app-header{
+    flex-shrink: 0;
+    flex-grow: 0;
+    background: #039be5;
+    width: 100%;
+  }
+  button{     
+    width: 83px;
+  }
+  ul.action-buttion li {display: initial; margin-left: 5px;}
+  .card {
+    border: solid 1px #E1E1E1;
+    border-radius: 0.5rem;
+    display: flex; 
+    flex-direction: column;
+    margin-top: 2rem;
+    max-width: 1184px;
+    padding: 2rem;
+    width: 100%;
+    background: white;
+    min-width: 900px;
+  
+  }
+  main {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  main:last-child {
+    margin-bottom: 2rem;
+  }
