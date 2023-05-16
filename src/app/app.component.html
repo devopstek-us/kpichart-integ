@@ -1,17 +1,29 @@
 <main>
 <app-header></app-header>
-<app-layout>
-
-    <div class="row">    
-        <div class="card">   
-            <h3>Upload your file here to generate charts</h3>
-            <input type="file" class="form-control" (change)="addfile($event)" placeholder="Upload file" accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">  
-        </div>      
+<div class="row">    
+    <div class="card">
+        <ul class="action-buttion">
+            <li>
+                <h3>Upload your file here to generate charts</h3>
+                <input #myInput type="file" class="form-control" (change)="onChange($event.target.files)" placeholder="Upload file" accept=".txt">
+            </li>
+            <li *ngIf="canGenerate">
+                <button (click)="reset()" >
+                    <span>Reset</span>
+                </button>
+            </li>
+            <li *ngIf="isGenerate">
+                <button (click)="generate()" >
+                    <span>Generate</span>
+                </button>
+            </li>
+        </ul>   
+    </div>      
+</div>
+<div *ngIf="chartData.length > 0 && canGenerate">
+    <div *ngFor="let singleChartData of chartData">
+        <app-spline-chart *ngIf="singleChartData.chart.type==='line'" [chartData]="singleChartData" class="card"></app-spline-chart>
+        <app-column-chart *ngIf="singleChartData.chart.type==='column'" [chartData]="singleChartData" class="card"></app-column-chart>
     </div>
-    <div *ngIf="chartData && file">
-        <app-line-chart class="card"></app-line-chart>
-        <app-histogram-chart class="card"></app-histogram-chart>
-        <app-pie-chart class="card"></app-pie-chart>
-    </div>
-</app-layout>
+</div>
 </main>

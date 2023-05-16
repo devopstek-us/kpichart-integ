@@ -1,6 +1,6 @@
 declare var require: any;
 
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import ExportingModule from 'highcharts/modules/exporting';
 import SunsetTheme from 'highcharts/themes/sunset.js';
 import * as Highcharts from "highcharts";
@@ -33,64 +33,104 @@ export class AppComponent {
   constructor(private dataService: DataService) {
 
   }
-  file: any
-  arrayBuffer: any
+
+  @ViewChild('myInput')
+  myInputVariable: ElementRef;
+  canGenerate: boolean = false
+  isGenerate: boolean = false
+
+  reset() {
+    this.myInputVariable.nativeElement.value = "";
+    this.chartData = [];
+    this.isGenerate = false
+    this.canGenerate = false
+  }
+
+  generate() {
+    this.canGenerate = true;
+    this.isGenerate = false
+  }
+
   chartData: any = []
-
-  addfile(event) {
-    this.file = event.target.files[0];
-    let fileReader = new FileReader();
-    fileReader.readAsArrayBuffer(this.file);
-    fileReader.onload = (e) => {
-      this.arrayBuffer = fileReader.result;
-      const data = new Uint8Array(this.arrayBuffer);
-      const arr = new Array();
-      for (let i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
-      const bstr = arr.join("");
-      const workbook = XLSX.read(bstr, { type: "binary" });
-      const first_sheet_name = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[first_sheet_name];
-      const xData = XLSX.utils.sheet_to_json(worksheet);
-      //console.log('INTER', this.objectIntersectKey(...xData));
-      let lastKeyItem;
-      let lastValueItem;
+  chartType:any = {
+    'Established_ERAB' : 'column',
+    'Accessibility_Pct': 'line',
+    'Retainability_Total': 'line',
+    'ATTv_Acc_pct': 'line',
+    'ERIv_Ret_pct': 'line',
+    'Rrc_Failures': 'line',
+    'Total_MMe_Drops': 'column',
+    'NR_RA_Attempts': 'column',
+    'NR_RA_Failures': 'column',
+    'NR_RANDOM_ACCESS_SR': 'line',
+    'ENDC_Attempts': 'column',
+    'NR_DATA_SCG_Bearer_Failures': 'column',
+    'NR_DATA_SCG_Bearer_Setup_SR': 'line',
+    'DATA_NR_leg_Bearer_Drops': 'column',
+    'NR_DL_ACK_MAC_MB': 'line'
+  } 
+  chartColors: any = [ "#2caffe", "#544fc5", "#00e272", "#fe6a35", "#6b8abc", "#d568fb", "#2ee0ca", "#fa4b42", "#feb56a", "#91e8e12" ]
+  public onChange(fileList: FileList): void {
+    let file = fileList[0];
+    let fileReader: FileReader = new FileReader();
+    let self = this;
+    fileReader.onloadend = function(x) {
+      self.isGenerate = true;
+      const allContent = fileReader.result
+      let lastLine = '';
+      let lastDataName = '';
+      let lastxAxis;
       let lastKey;
-      //let cData:any = [];
-      for (let j = 0; j != xData.length; ++j) {
-
-//        console.log('this.chartData', xData[j])
-        const a:any = xData[j]
-        const aKeys = Object.keys(a)
-        if(lastKeyItem && JSON.stringify(lastKeyItem) === JSON.stringify(aKeys)) {
-          const currentValueItem:any = Object.values(a)
-          const common = currentValueItem.filter(x => lastValueItem?.includes(x) && typeof x === 'string' && x != 'N/A')
-          //console.log('common', common)
-          if(common?.length === 1) {
-            lastKey = common[0];
-            //console.log('lastKey', lastKey);
-            //console.log('currentValueItem[0]', currentValueItem[0]);
-            //console.log('currentValueItem.s', currentValueItem.slice(2));
-            if(!this.chartData?.[lastKey]) {
-              this.chartData[lastKey] = [];
-            }
-            if(!this.chartData?.[lastKey]?.[currentValueItem[0]]) {
-              this.chartData[lastKey][currentValueItem[0]] = [];
-            }
-            const validKeys = aKeys.filter(x => !(x.startsWith('__') || x.endsWith(')')))
-            //console.log('validKeys', validKeys)
-            this.chartData[lastKey][currentValueItem[0]] = {
-              heading : validKeys,
-              values: validKeys.map((y) => { return a[y]})
-            }  
-          }
-          lastValueItem = currentValueItem
-        }
-        lastKeyItem = aKeys 
+      let chartData = [];
+      allContent?.toString().split(/\r?\n/).forEach((line) => {
         
-      }
-      this.dataService.getAfterParsedDataSubject().next(this.chartData) 
-      //console.log('this.chartData1', this.chartData)
+        if(line) {
+          if(line.startsWith('Object') && line.includes('Counter')) {
+
+            if(lastLine.trim().endsWith(':')) {
+              lastDataName = lastLine.slice(0, -1);
+            }
+            lastxAxis = line.split(/\s+/)?.slice(2)
+          } else if(line.startsWith('NRCell') || line.includes('Cell')) {
+            let yAxis = line.split(/\s+/)
+            const cKey = yAxis[1]?.trim()
+            const yAxisName = yAxis[0]?.split('=')?.[1]
+            yAxis = yAxis?.slice(2)
+            if(!chartData?.[cKey]) {
+              chartData[cKey] = {};
+            }
+            if(!chartData[cKey]['title']) {
+              chartData[cKey]['title'] = {
+                text: lastDataName
+              }  
+              chartData[cKey]['chart'] = {
+                type: self.chartType[cKey]
+              }
+            }
+            if(!chartData[cKey]['xAxis']) {
+              chartData[cKey]['xAxis'] = []
+              chartData[cKey]['xAxis']['categories'] = lastxAxis
+            }
+            if(!chartData[cKey]['series']) {
+              chartData[cKey]['series'] = []
+            }
+            chartData[cKey]['series'].push({
+              name: yAxisName,
+              data: yAxis.map(function(i){
+                if(i === 'N/A') { return null}
+                return parseFloat(i);
+              }),
+              type: chartData[cKey]['chart']['type'],
+            }) 
+            lastKey = cKey
+          }
+          lastLine = line.trim()
+        }
+      });
+      self.chartData = Object.values(chartData)
+      //console.log('chartData', self.chartData)
     }
+    fileReader.readAsText(file);
   }
 
 }

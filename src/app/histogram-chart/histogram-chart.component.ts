@@ -5,104 +5,65 @@ import { DataService } from '../services/data.service';
 HC_customEvents(Highcharts);
 
 @Component({
-  selector: 'app-histogram-chart',
+  selector: 'app-column-chart',
   templateUrl: './histogram-chart.component.html',
   styleUrls: ['./histogram-chart.component.css']
 })
 export class HistogramChartComponent {
-  public tChartData: any;
-  public tKeyItems: any[] = [];
-  public tKeyValues: any;
-  public series: any[] = []
-  public cat: any[] = [];
+  @Input() public chartData: any;  
   optFromInput: any
   colors = Highcharts.getOptions().colors;
   chartOptions:Highcharts.Options
 
-  constructor(private dataService: DataService) {
-    this.dataService.getAfterParsedDataSubject().subscribe((chartData) => {
-      const oneKeys = Object.keys(chartData)
-      const cData = chartData[oneKeys[0]];
-      this.tChartData = Object.keys(cData)
-      this.tKeyItems = Object.keys(chartData[oneKeys[0]])
-      this.tKeyValues = Object.values(this.tChartData)
-      for(let i=0; i < this.tKeyValues.length; i++) {
-        const name = this.tKeyItems[i];
-        const item = cData[name];
-        this.series.push({
-          name: name,
-          type: 'bar',
-          data: item.values,
-        });
-        this.cat = item.heading;
-      }
+  constructor(private dataService: DataService) { }
+  public async ngOnInit() {
 
       
       this.chartOptions = {
-         chart: {
-            type: 'bar'
-        },
-        title: {
-            text: '',
-            align: 'left'
-        },
-        subtitle: {
-            text: '',
-            align: 'left'
-        },
-        xAxis: {
-            categories: this.cat,
-            title: {
-                text: null
-            },
-            gridLineWidth: 1,
-            lineWidth: 0
-        },
-        yAxis: {
-            min: 0,
-            title: {
-                text: '',
-                align: 'high'
-            },
-            labels: {
-                overflow: 'justify'
-            },
-            gridLineWidth: 0
-        },
-        tooltip: {
-            valueSuffix: ' millions'
-        },
-        plotOptions: {
-            bar: {
-                dataLabels: {
-                    enabled: true
-                },
-                groupPadding: 0.1
-            }
-        },
-        legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'top',
-            x: -40,
-            y: 80,
-            floating: true,
-            borderWidth: 1,
-            backgroundColor:
-                Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
-            shadow: true
-        },
-        credits: {
+          chart: {
+              type: 'column'
+          },
+          credits: {
             enabled: false
-        },
-
-    series: this.series,
-
-    
+          },
+          legend: {
+            enabled: true
+          },
+          title: {
+            text: this.chartData.title.text,
+            align: 'center'
+          },
+          subtitle: {
+              text: ''
+          },
+          xAxis: {
+              categories: this.chartData.xAxis.categories,
+              crosshair: true
+          },
+          yAxis: {
+              min: 0,
+              title: {
+                  text: ''
+              }
+          },
+          tooltip: {
+              headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+              pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                  '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+              footerFormat: '</table>',
+              shared: true,
+              useHTML: true
+          },
+          plotOptions: {
+              column: {
+                  pointPadding: 0.2,
+                  borderWidth: 0
+              }
+          },
+          series: this.chartData.series
 };
 
       this.optFromInput = this.chartOptions
-    })
   }
 
 
@@ -120,8 +81,5 @@ export class HistogramChartComponent {
   updateInputChart() {
     this.optFromInput = this.chartOptions //JSON.parse(this.optFromInputString);
   }
-
-
-
 
 }

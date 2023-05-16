@@ -5,60 +5,37 @@ import { DataService } from '../services/data.service';
 HC_customEvents(Highcharts);
 
 @Component({
-  selector: 'app-line-chart',
+  selector: 'app-spline-chart',
   templateUrl: './line-chart.component.html',
   styleUrls: ['./line-chart.component.css']
 })
 export class LineChartComponent {
-  public tChartData: any;
-  public tKeyItems: any[] = [];
-  public tKeyValues: any;
-  public series: any[] = []
-  public cat: any[] = [];
+  @Input() public chartData: any;  
   optFromInput: any
   colors = Highcharts.getOptions().colors;
   chartOptions:Highcharts.Options
 
   constructor(private dataService: DataService) {
-    this.dataService.getAfterParsedDataSubject().subscribe((chartData) => {
-
-      console.log('ngOnChanges', chartData)
-      const oneKeys = Object.keys(chartData)
-      const cData = chartData[oneKeys[0]];
-      this.tChartData = Object.keys(cData)
-      this.tKeyItems = Object.keys(chartData[oneKeys[0]])
-      this.tKeyValues = Object.values(this.tChartData)
-      for(let i=0; i < this.tKeyValues.length; i++) {
-        const name = this.tKeyItems[i];
-        const item = cData[name];
-        this.series.push({
-          name: name,
-          type: 'spline',
-          data: item.values,
-          color: this.colors[i],
-        });
-        this.cat = item.heading;
-      }
-
-      console.log('this.cat', this.cat);
-
-      console.log('this.tChartData', this.tChartData );
-      console.log('this.tKeyItems', this.tKeyItems );
-      console.log('this.tKeyValues', this.tKeyValues );
-      console.log('this.series', this.series );
+    console.log('constructor.chartData', this.chartData)
+  }
+  public async ngOnInit() {
+    console.log('OnInit.chartData', this.chartData)
 
       this.chartOptions = {
     chart: {
-        type: 'spline'
+        type: 'line'
     },
-
+    credits: {
+        enabled: false
+    },
     legend: {
+        enabled: true,
         symbolWidth: 40
     },
 
     title: {
-        text: '',
-        align: 'left'
+        text: this.chartData.title.text,
+        align: 'center'
     },
 
     subtitle: {
@@ -68,21 +45,15 @@ export class LineChartComponent {
 
     yAxis: {
         title: {
-            text: 'Percentage usage'
+            text: ''
         },
-        accessibility: {
-            description: 'Percentage usage'
-        }
     },
 
     xAxis: {
         title: {
             text: ''
         },
-        accessibility: {
-            description: 'Time from December 2010 to September 2019'
-        },
-        categories: this.cat
+        categories: this.chartData.xAxis.categories
     },
 
     tooltip: {
@@ -99,7 +70,7 @@ export class LineChartComponent {
         }
     },
 
-    series: this.series,
+    series: this.chartData.series,
 
     responsive: {
         rules: [{
@@ -115,7 +86,7 @@ export class LineChartComponent {
                     itemWidth: 150
                 },
                 xAxis: {
-                    categories: this.cat,
+                    categories: this.chartData.xAxis.categories,
                 },
                 yAxis: {
                     visible: false
@@ -124,9 +95,9 @@ export class LineChartComponent {
         }]
     }
 };
-
+        console.log('this.chartOptions', this.chartOptions);
       this.optFromInput = this.chartOptions
-    })
+    
   }
 
 
